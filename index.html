@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Tiger AI vs Goat Human | NSXY Elite</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #020406;
+        --accent: #00f2ff;
+        --goat: #00ff88;
+        --tiger: #ff4d4d;
+        --glass: rgba(255, 255, 255, 0.08);
+      }
+      body {
+        font-family: "Rajdhani", sans-serif;
+        background: radial-gradient(circle at center, #0a141d 0%, #020406 100%);
+        color: #fff;
+        margin: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+      /* --- Header --- */
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 25px;
+        background: rgba(0, 0, 0, 0.9);
+        border-bottom: 1px solid rgba(0, 242, 255, 0.3);
+        z-index: 100;
+        backdrop-filter: blur(10px);
+      }
+      .logo-section {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+      .logo {
+        font-family: "Orbitron";
+        color: var(--accent);
+        font-size: 1.1rem;
+        letter-spacing: 1px;
+      }
+      .stats-top {
+        display: flex;
+        gap: 15px;
+      }
+      .stat-pill {
+        background: var(--glass);
+        padding: 2px 12px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+      }
+      .nav-btn {
+        text-decoration: none;
+        color: #aaa;
+        border: 1px solid #444;
+        padding: 5px 12px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        transition: 0.3s;
+        text-transform: uppercase;
+      }
+      .nav-btn:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      /* --- Arena --- */
+      main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        perspective: 1500px;
+        padding-bottom: 40px;
+      }
+      #turnTag {
+        font-family: "Orbitron";
+        font-size: 0.9rem;
+        margin-bottom: 15px;
+        letter-spacing: 2px;
+      }
+
+      .board-container {
+        position: relative;
+        width: 380px;
+        height: 480px;
+        transform: rotateX(25deg);
+        transform-style: preserve-3d;
+      }
+      #board-svg {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+      .connection-line {
+        stroke: rgba(0, 242, 255, 0.15);
+        stroke-width: 2;
+      }
+
+      .slot {
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        background: #000;
+        border: 1.5px solid var(--accent);
+        border-radius: 50%;
+        transform: translate(-50%, -50%) translateZ(2px);
+        cursor: pointer;
+        transition: 0.2s;
+        z-index: 5;
+      }
+      .slot:hover {
+        box-shadow: 0 0 15px var(--accent);
+        transform: translate(-50%, -50%) translateZ(15px) scale(1.3);
+      }
+
+      .piece {
+        position: absolute;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        pointer-events: none;
+        transform: translate(-50%, -50%) translateZ(25px);
+        transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+      .piece.tiger {
+        filter: drop-shadow(0 0 8px var(--tiger));
+      }
+      .piece.goat {
+        filter: drop-shadow(0 0 8px var(--goat));
+      }
+      .target-hint {
+        background: rgba(255, 255, 255, 0.3);
+        border-color: #fff;
+      }
+
+      /* --- Celebration --- */
+      #celebration {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 1000;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(15px);
+      }
+      .win-title {
+        font-family: "Orbitron";
+        font-size: 3.5rem;
+        margin-bottom: 20px;
+      }
+
+      .side-controls {
+        position: fixed;
+        left: 20px;
+        bottom: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .circle-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 1px solid #444;
+        background: #000;
+        color: #fff;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="celebration">
+      <div class="win-title" id="winnerName">AI WINS</div>
+      <button
+        class="nav-btn"
+        style="padding: 10px 25px"
+        onclick="location.reload()"
+      >
+        REMATCH
+      </button>
+    </div>
+
+    <header>
+      <div class="logo-section">
+        <div class="logo">NSXY TIGER AI</div>
+        <div class="stats-top">
+          <div class="stat-pill">
+            <span style="color: var(--goat)">🐏</span>
+            <span id="resNum" style="color: var(--goat)">18</span>
+          </div>
+          <div class="stat-pill">
+            <span style="color: var(--tiger)">🐯</span>
+            <span id="capNum" style="color: var(--tiger)">0</span>
+          </div>
+        </div>
+      </div>
+      <div class="nav-group">
+        <a href="mailto:nsxy09@gmail.com" class="nav-btn">Suggestions</a>
+        <a href="https://wa.me/919014174623" target="_blank" class="nav-btn"
+          >Contact</a
+        >
+      </div>
+    </header>
+
+    <main>
+      <div id="turnTag">GOAT'S TURN (YOU)</div>
+      <div class="board-container" id="gameBoard">
+        <svg id="board-svg"></svg>
+      </div>
+      <div class="side-controls">
+        <button class="circle-btn" onclick="toggleMute()" id="muteBtn">
+          🔊
+        </button>
+        <button class="circle-btn" onclick="initGame()">🔄</button>
+      </div>
+    </main>
+
+    <script>
+      const COORDS = {
+        "0,2": [50, 5],
+        "1,0": [10, 25],
+        "1,1": [30, 25],
+        "1,2": [50, 25],
+        "1,3": [70, 25],
+        "1,4": [90, 25],
+        "2,0": [10, 45],
+        "2,1": [30, 45],
+        "2,2": [50, 45],
+        "2,3": [70, 45],
+        "2,4": [90, 45],
+        "3,0": [10, 65],
+        "3,1": [30, 65],
+        "3,2": [50, 65],
+        "3,3": [70, 65],
+        "3,4": [90, 65],
+        "4,0": [10, 85],
+        "4,1": [30, 85],
+        "4,2": [50, 85],
+        "4,3": [70, 85],
+        "4,4": [90, 85],
+        "5,1": [30, 95],
+        "5,2": [50, 95],
+        "5,3": [70, 95],
+      };
+
+      const ADJACENCY = {
+        "0,2": ["1,1", "1,2", "1,3"],
+        "1,0": ["1,1", "2,0"],
+        "1,1": ["0,2", "1,0", "1,2", "2,1"],
+        "1,2": ["0,2", "1,1", "1,3", "2,2"],
+        "1,3": ["0,2", "1,2", "1,4", "2,3"],
+        "1,4": ["1,3", "2,4"],
+        "2,0": ["1,0", "2,1"],
+        "2,1": ["1,1", "2,0", "2,2", "3,1"],
+        "2,2": ["1,2", "2,1", "2,3", "3,2"],
+        "2,3": ["1,3", "2,2", "2,4", "3,3"],
+        "2,4": ["1,4", "2,3"],
+        "3,0": ["3,1", "4,0"],
+        "3,1": ["2,1", "3,0", "3,2", "4,1"],
+        "3,2": ["2,2", "3,1", "3,3", "4,2"],
+        "3,3": ["2,3", "3,2", "3,4", "4,3"],
+        "3,4": ["3,3", "4,4"],
+        "4,0": ["3,0", "4,1"],
+        "4,1": ["3,1", "4,0", "4,2", "5,1"],
+        "4,2": ["3,2", "4,1", "4,3", "5,2"],
+        "4,3": ["3,3", "4,2", "4,4", "5,3"],
+        "4,4": ["3,4", "4,3"],
+        "5,1": ["4,1", "5,2"],
+        "5,2": ["4,2", "5,1", "5,3"],
+        "5,3": ["4,3", "5,2"],
+      };
+
+      let state = {
+        board: {},
+        turn: "GOAT",
+        reserve: 18,
+        captured: 0,
+        selected: null,
+        targets: [],
+        muted: false,
+        isAiThinking: false,
+      };
+
+      const roar = new Audio(
+        "https://assets.mixkit.co/active_storage/sfx/10/10-preview.mp3",
+      );
+      const moveSfx = new Audio(
+        "https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3",
+      );
+
+      function toggleMute() {
+        state.muted = !state.muted;
+        document.getElementById("muteBtn").textContent = state.muted
+          ? "0"
+          : "🔊";
+      }
+
+      function initGame() {
+        state = {
+          ...state,
+          board: {},
+          turn: "GOAT",
+          reserve: 18,
+          captured: 0,
+          selected: null,
+          targets: [],
+          isAiThinking: false,
+        };
+        Object.keys(COORDS).forEach((k) => (state.board[k] = null));
+        ["0,2", "1,2", "2,2", "3,2"].forEach((k) => (state.board[k] = "🐯"));
+        drawConnections();
+        render();
+      }
+
+      function drawConnections() {
+        const svg = document.getElementById("board-svg");
+        svg.innerHTML = "";
+        const seen = new Set();
+        for (let a in ADJACENCY) {
+          ADJACENCY[a].forEach((b) => {
+            const key = [a, b].sort().join("|");
+            if (!seen.has(key)) {
+              const line = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "line",
+              );
+              line.setAttribute("x1", `${COORDS[a][0]}%`);
+              line.setAttribute("y1", `${COORDS[a][1]}%`);
+              line.setAttribute("x2", `${COORDS[b][0]}%`);
+              line.setAttribute("y2", `${COORDS[b][1]}%`);
+              line.classList.add("connection-line");
+              svg.appendChild(line);
+              seen.add(key);
+            }
+          });
+        }
+      }
+
+      function render() {
+        const board = document.getElementById("gameBoard");
+        board.querySelectorAll(".slot, .piece").forEach((n) => n.remove());
+        for (let id in COORDS) {
+          const slot = document.createElement("div");
+          slot.className = `slot ${state.targets.includes(id) ? "target-hint" : ""}`;
+          slot.style.left = `${COORDS[id][0]}%`;
+          slot.style.top = `${COORDS[id][1]}%`;
+          slot.onclick = () => handleClick(id);
+          board.appendChild(slot);
+          if (state.board[id]) {
+            const p = document.createElement("div");
+            p.className = `piece ${state.board[id] === "🐯" ? "tiger" : "goat"}`;
+            p.style.left = `${COORDS[id][0]}%`;
+            p.style.top = `${COORDS[id][1]}%`;
+            p.textContent = state.board[id];
+            if (state.selected === id)
+              p.style.transform = `translate(-50%, -50%) translateZ(50px) scale(1.3)`;
+            board.appendChild(p);
+          }
+        }
+        document.getElementById("resNum").textContent = state.reserve;
+        document.getElementById("capNum").textContent = state.captured;
+        document.getElementById("turnTag").textContent =
+          state.turn === "GOAT" ? "GOAT'S TURN (YOU)" : "AI IS THINKING...";
+      }
+
+      function getJumps(pos, customBoard = state.board) {
+        const jumps = {};
+        ADJACENCY[pos].forEach((mid) => {
+          if (customBoard[mid] === "🐏") {
+            ADJACENCY[mid].forEach((end) => {
+              if (!customBoard[end]) {
+                const [r1, c1] = pos.split(",").map(Number),
+                  [r2, c2] = mid.split(",").map(Number),
+                  [r3, c3] = end.split(",").map(Number);
+                if (
+                  (r1 === r2 && r2 === r3) ||
+                  (c1 === c2 && c2 === c3) ||
+                  (pos === "0,2" && (end === "2,1" || end === "2,3"))
+                )
+                  jumps[end] = mid;
+              }
+            });
+          }
+        });
+        return jumps;
+      }
+
+      // --- Human Logic ---
+      function handleClick(id) {
+        if (state.turn !== "GOAT" || state.isAiThinking) return;
+        const piece = state.board[id];
+        if (state.reserve > 0 && !piece) {
+          state.board[id] = "🐏";
+          state.reserve--;
+          endTurn();
+        } else if (state.reserve === 0) {
+          if (piece === "🐏") {
+            state.selected = id;
+            state.targets = ADJACENCY[id].filter((n) => !state.board[n]);
+          } else if (state.targets.includes(id)) {
+            state.board[state.selected] = null;
+            state.board[id] = "🐏";
+            state.selected = null;
+            state.targets = [];
+            endTurn();
+          }
+        }
+        render();
+      }
+
+      function endTurn() {
+        if (!state.muted) moveSfx.play();
+        if (checkWin()) return;
+        state.turn = "TIGER";
+        setTimeout(tigerAI, 800);
+      }
+
+      // --- Tiger AI Logic ---
+      function tigerAI() {
+        state.isAiThinking = true;
+        let possibleMoves = [];
+
+        // Find all possible jumps and moves
+        Object.keys(state.board).forEach((startPos) => {
+          if (state.board[startPos] === "🐯") {
+            // Jumps (High Priority)
+            const jumps = getJumps(startPos);
+            Object.keys(jumps).forEach((endPos) => {
+              possibleMoves.push({
+                start: startPos,
+                end: endPos,
+                victim: jumps[endPos],
+                score: 1000,
+              });
+            });
+            // Normal Moves
+            ADJACENCY[startPos].forEach((endPos) => {
+              if (!state.board[endPos]) {
+                // Scoring mobility and proximity
+                let score = ADJACENCY[endPos].length * 10;
+                possibleMoves.push({
+                  start: startPos,
+                  end: endPos,
+                  victim: null,
+                  score: score,
+                });
+              }
+            });
+          }
+        });
+
+        if (possibleMoves.length > 0) {
+          // Sort by score (descending)
+          possibleMoves.sort((a, b) => b.score - a.score);
+          const best = possibleMoves[0];
+
+          state.board[best.start] = null;
+          if (best.victim) {
+            state.board[best.victim] = null;
+            state.captured++;
+            if (!state.muted) roar.play();
+          } else {
+            if (!state.muted) moveSfx.play();
+          }
+          state.board[best.end] = "🐯";
+        }
+
+        state.turn = "GOAT";
+        state.isAiThinking = false;
+        render();
+        checkWin();
+      }
+
+      function checkWin() {
+        if (state.captured >= 5) {
+          endCelebration("AI TIGERS WIN");
+          return true;
+        }
+        let tigerMoves = 0;
+        Object.keys(state.board).forEach((k) => {
+          if (state.board[k] === "🐯") {
+            tigerMoves += ADJACENCY[k].filter((n) => !state.board[n]).length;
+            tigerMoves += Object.keys(getJumps(k)).length;
+          }
+        });
+        if (tigerMoves === 0) {
+          endCelebration("HUMAN GOATS WIN");
+          return true;
+        }
+        return false;
+      }
+
+      function endCelebration(msg) {
+        const overlay = document.getElementById("celebration");
+        const title = document.getElementById("winnerName");
+        title.textContent = msg;
+        title.style.color = msg.includes("AI") ? "var(--tiger)" : "var(--goat)";
+        overlay.style.display = "flex";
+      }
+
+      initGame();
+    </script>
+  </body>
+</html>
